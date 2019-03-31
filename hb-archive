@@ -1,55 +1,119 @@
 #!/bin/bash
 #####################################################################
-# Script Name  : archive-bank
-# Description  : archives HomeBank 5.2.3 backup files from the previous month
-# Dependencies : date, find, mv, rm, touch, zip
+# Script Name  : hb-archive
+# Description  : archive HomeBank 5.2.3 backup files from the previous month
+# Dependencies : case, cat, clear, date, find, mv, touch, zip
 # Arguments    : none
-# Author       : Richard Romig, 31 January 2019
+# Author       : Richard Romig, 30 March 2019
 # Email        : rick.romig@gmail.com
 # Comment      : Run on the last date of the month!
 # Script will not run prior to the 21st day of the month.
 #####################################################################
+# Copyright (C) 2019, Richard B. Romig
+# Email: rick.romig@gmail.com
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program. If not, see <https://www.gnu.org/licenses/>.
+
+# Fnction to display help page
+hba-help () {
+
+cat << _EOF_
+
+HomeBank Archive, version 1.0
+
+hb-archive is a script to create a monthly archive of backup files created by
+HomeBank. I've used this script with HomeBank version 5.2.3 but it should work
+with any version that creates a daily backup with the .bak extension on
+Ubuntu-based Linux systems.
+
+The script is intended to be run on the last day of the month to archive the
+previous month's backup files. For instance, running the script on March 31
+archives February's backup files. However, the script can be forced to run as
+early as the 21st of the month.
+
+Backup (*.bak) files in the the ~/Documents/HomeBank directory dated earlier than
+12:01 AM on the first day of the current calendar month are moved to the backup
+folder and a compressed archive file is created in the archive folder. Once the
+archive file is created, the .bak files in the backup folder are deleted.  If
+there are no backup files in the backup folder, no archive file is created and
+the script exits.
+
+The archive and backup folders are created if they don't already exist.
+
+The only command line arguments needed are --help or -h to display this help page.
+All other arguments are ignored.
+
+Please review the README.md, LICENSE, and DISCLAIMER for more information.
+
+By Richard Romig (GNU/General Public License version 2.0)
+
+_EOF_
+
+}
+
+clear
+if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
+	hba-help
+	exit
+fi
 
 # Determine the current month and day
 month=$(date +"%b")
 today=$(date +"%d")
-# set value of runit. 0 = okay to run script, 1 = not okay
-runit=1
 
-# check if it's the last day of the month
+# Set initial value of runflag. 0 = okay to run script, 1 = not okay
+runflag=1
+
+# Check to see if it's the last day of the month
 case $month in
 	Feb)
-		[ "$today" -ge "28" ] && runit=0;;
+		[ "$today" -ge "28" ] && runflag=0;;
 	Apr|Jun|Sep|Nov)
-		[ "$today" -eq "30" ] && runit=0;;
+		[ "$today" -eq "30" ] && runflag=0;;
 	*)
-		[ "$today" -eq "31" ] && runit=0;;
+		[ "$today" -eq "31" ] && runflag=0;;
 esac
 
-# if not the last day of the month
-if [ "$runit" -eq "1" ] && [ "$today" -lt "21" ]; then
+# If not the last day of the month, check if earlier than 21st
+if [ "$runflag" -eq "1" ] && [ "$today" -lt "21" ]; then
 	echo "$month $today is too early in the month to archive last month's backup files."
 	echo "Archive operation canceled."
-	exit 1
-elif [ "$runit" -eq "1" ]; then
+	exit
+elif [ "$runflag" -eq "1" ]; then
 	echo "$month $today is not the end of the month."
 	read -p "Do you sitll wish to archive last month's backup files? " yn
 	case $yn in
 		[Yy]*)
-			echo "Archiving last month's backup files...";;
+			sleep 5
+			runflag=0
+			clear
+			;;
 		*)
 			echo "Archive operation canceled."
-			exit 1
+			exit
 			;;
 	esac
 fi
 
-# Execute the arhive operation
+# Execution
 
-# store the directory where script was launched
+# Store the directory where script was launched
 curdir=$PWD
+# Get previous month
+prevmonth=$(date --date="40 days ago" +"%B %Y")
 
-# set reference date to 1 minute after midnight on 1st day of the current month
+# Set reference date to 12:01 AM on 1st day of the current month
 # and create the temporary reference file
 rd=$(date +"%Y%m")
 rd+="010001"
@@ -59,16 +123,17 @@ if [ "$?" -ne "0" ]; then
 	exit 1
 fi
 
-# go to HomeBank directory from wherever you are if you're not already there
+# Go to the HomeBank directory from wherever you are if you're not already there
 [ "$curdir" != "~/Documents/HomeBank" ] && pushd ~/Documents/HomeBank/ > /dev/null
 
-# create the backup and archive folders if they don't already exist
+# Create the backup and archive folders if they don't already exist
 [ ! -d ~/Documents/HomeBank/backup ] && mkdir -p ~/Documents/HomeBank/backup
 [ ! -d ~/Documents/HomeBank/archive ] && mkdir -p ~/Documents/HomeBank/archive
 
-echo "Archiving HomeBank backup files from the previous calendar month..."
+echo "HomeBank Archive 1.0 -- Copyright (c) 2019, Richard Romig (GPL v2.0)"
+echo "Archiving HomeBank backup files from $prevmonth ..."
 
-# move backup files from the previous month to the backup folder
+# Move backup files from the previous month to the backup folder
 find ./ -maxdepth 1 -type f -iname "*.bak" -not -newer /tmp/homebank.txt -exec mv '{}' backup/ \;
 
 # Check for files in the backup directory
@@ -76,18 +141,17 @@ if [ "$(ls -A backup)" ]; then
 	hbarchive=$(date --date="40 days ago" +"%Y-%m")
 	hbarchive+="-backup.zip"
 	cd backup/
-	zip $hbarchive *.bak
-	mv $hbarchive ../archive/
-	rm *.bak
+	echo "Creating $hbarchive ..."
+	zip -m ../archive/$hbarchive *.bak
 	cd ..
-	echo "HomeBank backup files for previous calendar month archived."
+	echo "HomeBank backup files for $prevmonth archived."
 else
-	echo "No previous calendar month backup files available to be archived."
+	echo "No backup files for $prevmonth available to be archived."
 fi
 
 rm /tmp/homebank.txt
 
-# go back to wherever you started
+# Go back to wherever you started
 [ "$curdir" != "~/Documents/HomeBank" ] && popd > /dev/null
 
 exit 0
