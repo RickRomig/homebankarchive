@@ -9,12 +9,56 @@
 # Comment      : Run on the last date of the month!
 #####################################################################
 
+# check if the last day of the month
+month=$(date +"%b")
+today=$(date +"%d")
+runit=0
+
+case $month in
+	Jan|Mar|Jul|Aug|Oct|Dec)
+		[ "$today" -eq "31" ] && runit=1
+		;;
+	Apr|Jun|Sep|Nov)
+		[ "$today" -eq "30" ] && runit=1
+		;;
+	Feb)
+		[ "$today" -ge "28" ] && runit=1
+		;;
+	*)
+		;;
+esac
+
+if [ "$runit" -lt "1" ]; then
+	echo "Today is $month $today. It is not the last day of the month."
+	read -p "Do you wish to run the script anyway? [y/N] " yn
+	case $yn in
+		[Yy]* )
+			if [ "$today" -lt "21" ]; then
+				echo "It is too early in the month to archive last month's files."
+				exit 1
+			else
+				echo "Running the script."
+			fi
+			;;
+		*)
+			echo "Exiting the script."
+			exit 1
+			;;
+	esac
+fi
+
+if [ "$today" -lt "21" ]; then
+	echo "It is too early in the month to archive last month's files."
+	exit 1
+fi
+
+# And now to the actual script! ##
+
 # create archive filename based on previous month
 hbarchive=$(date --date="40 days ago" +"%Y-%m")
 hbarchive+="-backup.zip"
 
-# set reference date to
-# 1 minute after midnight on the 1st day of the current month
+# set reference date to 1 minute after midnight on 1st day of the current month
 rd=$(date +"%Y%m")
 rd+="010001"
 
@@ -22,31 +66,25 @@ rd+="010001"
 curdir=$PWD
 
 # create the temporary reference file
-touch -t $rd /tmp/homebank.tmp 2>/dev/null
+touch -t $rd /tmp/homebank.txt 2>/dev/null
 if [ "$?" -ne "0" ]; then
-	echo "Error: Could not create /tmp/homebank.tmp"
+	echo "Error: Could not create /tmp/homebank.txt"
 	exit 1
 fi
 
 # go to HomeBank directory from wherever you are if you're not already there
-if [ "$curdir" != ~/Documents/HomeBank ]; then
-	pushd ~/Documents/HomeBank/ > /dev/null
-fi
+[ "$curdir" != "~/Documents/HomeBank" ] && pushd ~/Documents/HomeBank/ > /dev/null
 
 # create the backup folder if it doesn't exist
-if [ ! -d ./backup/ ]; then
-	mkdir backup
-fi
+[ ! -d ~/Documents/HomeBank/backup ] && mkdr -p ~/Documents/HomeBank/backup
 
 # create the archive folder if it doesn't exist
-if [ ! -d ./archive/ ]; then
-	mkdir archive
-fi
+[ ! -d ~/Documents/HomeBank/archive ] && mkdr -p ~/Documents/HomeBank/archive
 
 echo "Archiving HomeBank backup files from the previous calendar month..."
 
 # move backup files from the previous month to the backup folder
-find ./ -maxdepth 1 -type f -iname "*.bak" -not -newer /tmp/homebank.tmp -exec mv '{}' backup/ \;
+find ./ -maxdepth 1 -type f -iname "*.bak" -not -newer /tmp/homebank.txt -exec mv '{}' backup/ \;
 
 # create a zipped archive in the backup folder
 cd backup/
@@ -63,14 +101,11 @@ fi
 
 cd ..
 
-rm /tmp/homebank.tmp
+rm /tmp/homebank.txt
 
 echo "HomeBank backup files archived."
 
 # go back to wherever you started
-if [ "$curdir" != ~/Documents/HomeBank ]; then
-	popd > /dev/null
-fi
+[ "$curdir" != "~/Documents/HomeBank" ] && popd > /dev/null
 
 exit 0
-
