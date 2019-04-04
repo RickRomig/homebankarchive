@@ -62,94 +62,111 @@ _EOF_
 
 }
 
-clear
-if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
-	hba-help
-	exit
-fi
+# Cleanup tmp file after exit
+cleanup () {
+  if [ -f "$ref_file" ]; then
+    rm -f "ref_file"
+  fi
+}
 
-# Determine the current month and day
-month=$(date +"%b")
-today=$(date +"%d")
+trap cleanup EXIT
 
-# Set initial value of runflag. 0 = okay to run script, 1 = not okay
-runflag=1
+# Variables
 
-# Check to see if it's the last day of the month
-case $month in
-	Feb)
-		[ "$today" -ge "28" ] && runflag=0;;
-	Apr|Jun|Sep|Nov)
-		[ "$today" -eq "30" ] && runflag=0;;
-	*)
-		[ "$today" -eq "31" ] && runflag=0;;
-esac
-
-# If not the last day of the month, check if earlier than 21st
-if [ "$runflag" -eq "1" ] && [ "$today" -lt "21" ]; then
-	echo "$month $today is too early in the month to archive last month's backup files."
-	echo "Archive operation canceled."
-	exit
-elif [ "$runflag" -eq "1" ]; then
-	echo "$month $today is not the end of the month."
-	read -p "Do you sitll wish to archive last month's backup files? " yn
-	case $yn in
-		[Yy]*)
-			sleep 5
-			runflag=0
-			clear
-			;;
-		*)
-			echo "Archive operation canceled."
-			exit
-			;;
-	esac
-fi
-
-# Execution
+title="HomeBank Archive 1.0.1 -- Copyright (c) 2019, Richard Romig (GPL v2.0)"
 
 # Store the directory where script was launched
 curdir=$PWD
+
+# Set initial value of runflag to 1 (not okay to run archive)
+runflag=1
+
+# Get the current month and day
+month=$(date +"%b")
+today=$(date +"%d")
+
 # Get previous month
 prevmonth=$(date --date="40 days ago" +"%B %Y")
 
+# Create filename for previous month archive file
+hbarchive=$(date --date="40 days ago" +"%Y-%m")
+hbarchive+="-backup.zip"
+
 # Set reference date to 12:01 AM on 1st day of the current month
-# and create the temporary reference file
 rd=$(date +"%Y%m")
 rd+="010001"
-touch -t $rd /tmp/homebank.txt 2>/dev/null
+
+# Create the reference file and exit on error
+ref_file="/tmp/homebank.tmp"
+touch -t $rd $ref_file
 if [ "$?" -ne "0" ]; then
-	echo "Error: Could not create /tmp/homebank.txt"
-	exit 1
+  echo "Error: Could not create $ref_file"
+  exit 1
 fi
+
+# Show help
+clear
+if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
+  hba-help
+  exit
+fi
+
+# Check to see if it's the last day of the month
+case $month in
+  Feb)
+    [ "$today" -ge "28" ] && runflag=0 ;;
+  Apr|Jun|Sep|Nov)
+    [ "$today" -eq "30" ] && runflag=0 ;;
+  *)
+    [ "$today" -eq "31" ] && runflag=0 ;;
+esac
+
+# If not the last day of the month, check if too early to archive
+if (( runflag == 1 )) && (( today < 21 )); then
+  echo "$title"
+  echo "$month $today is too early in the month to archive last month's backup files."
+  echo "Archive operation canceled."
+  exit
+elif (( runflag == 1 )); then
+  echo "$title"
+  echo "$month $today is not the end of the month."
+  read -p "Do you still wish to archive backup files for $prevmonth? " yn
+  case $yn in
+    [Yy]*)
+      sleep 5
+      runflag=0
+      clear
+      ;;
+    *)
+      echo "Archive operation canceled."
+      exit
+      ;;
+  esac
+fi
+
+# Execution
 
 # Go to the HomeBank directory from wherever you are if you're not already there
 [ "$curdir" != "~/Documents/HomeBank" ] && pushd ~/Documents/HomeBank/ > /dev/null
 
 # Create the backup and archive folders if they don't already exist
-[ ! -d ~/Documents/HomeBank/backup ] && mkdir -p ~/Documents/HomeBank/backup
-[ ! -d ~/Documents/HomeBank/archive ] && mkdir -p ~/Documents/HomeBank/archive
+[ -d ~/Documents/HomeBank/backup ] || mkdir -p ~/Documents/HomeBank/backup
+[ -d ~/Documents/HomeBank/archive ] || mkdir -p ~/Documents/HomeBank/archive
 
-echo "HomeBank Archive 1.0 -- Copyright (c) 2019, Richard Romig (GPL v2.0)"
+echo "$title"
 echo "Archiving HomeBank backup files from $prevmonth ..."
 
 # Move backup files from the previous month to the backup folder
-find ./ -maxdepth 1 -type f -iname "*.bak" -not -newer /tmp/homebank.txt -exec mv '{}' backup/ \;
+find ./ -maxdepth 1 -type f -iname "*.bak" -not -newer $ref_file -exec mv '{}' backup/ \;
 
 # Check for files in the backup directory
 if [ "$(ls -A backup)" ]; then
-	hbarchive=$(date --date="40 days ago" +"%Y-%m")
-	hbarchive+="-backup.zip"
-	cd backup/
-	echo "Creating $hbarchive ..."
-	zip -m ../archive/$hbarchive *.bak
-	cd ..
-	echo "HomeBank backup files for $prevmonth archived."
+  echo "Creating $hbarchive ..."
+  zip -m archive/$hbarchive backup/*.bak
+  echo "HomeBank backup files for $prevmonth archived."
 else
-	echo "No backup files for $prevmonth available to be archived."
+  echo "No backup files for $prevmonth available to be archived."
 fi
-
-rm /tmp/homebank.txt
 
 # Go back to wherever you started
 [ "$curdir" != "~/Documents/HomeBank" ] && popd > /dev/null

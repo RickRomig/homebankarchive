@@ -1,4 +1,4 @@
-# HomeBank Archive 1.0
+# HomeBank Archive
 
 ### Description
 HomeBank Archive (`hb-archive`) is a script to create a monthly archive of backup files created by HomeBank. I've used this script with HomeBank version 5.2.3 but it should work with any version of the program that creates a daily backup with the .bak extension on Ubuntu-based Linux systems.
@@ -16,13 +16,13 @@ Download [homebankarchive-master.zip](https://github.com/RickRomig/homebankarchi
 Run the script from a terminal.
 ```
 hb-archive
-OR
+# OR
 ./hb-archive
 ```
 The script does not require root (sudo) access. No command line arguments are necessary except to bring up the help page.
 ```
 $ hb-archive --help
-OR
+# OR
 $ hb-archive -h
 ```
 
