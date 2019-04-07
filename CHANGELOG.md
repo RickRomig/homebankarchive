@@ -1,6 +1,6 @@
 # Changelog
 ### 7 April 2019
-1. Fixed an in the cleanup function which prevented the temporary reference file from being deleted. Changed `rm -f "ref_file"` to `'rm -f "$ref_file"`.
+1. Fixed an error in the cleanup function which prevented the temporary reference file from being deleted. Changed `rm -f "ref_file"` to `'rm -f "$ref_file"`.
 
 ### 3 April 2019
 1. Created new variables to contain the script's title and the reference file name, replacing all hard coded references to them.
