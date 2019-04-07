@@ -19,7 +19,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along
@@ -45,7 +45,7 @@ early as the 21st of the month.
 Backup (*.bak) files in the the ~/Documents/HomeBank directory dated earlier than
 12:01 AM on the first day of the current calendar month are moved to the backup
 folder and a compressed archive file is created in the archive folder. Once the
-archive file is created, the .bak files in the backup folder are deleted.  If
+archive file is created, the .bak files in the backup folder are deleted. If
 there are no backup files in the backup folder, no archive file is created and
 the script exits.
 
@@ -54,7 +54,8 @@ The archive and backup folders are created if they don't already exist.
 The only command line arguments needed are --help or -h to display this help page.
 All other arguments are ignored.
 
-Please review the README.md, LICENSE, and DISCLAIMER for more information.
+Please review the README.md, LICENSE, and WARRANTY in the downloaded ZIP for
+information. They can also be reviewed at https://github.com/RickRomig/homebankarchive
 
 By Richard Romig (GNU/General Public License version 2.0)
 
@@ -65,7 +66,7 @@ _EOF_
 # Cleanup tmp file after exit
 cleanup () {
   if [ -f "$ref_file" ]; then
-    rm -f "ref_file"
+    rm -f "$ref_file"
   fi
 }
 
