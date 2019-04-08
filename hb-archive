@@ -30,7 +30,7 @@ hba-help () {
 
 cat << _EOF_
 
-HomeBank Archive, version 1.0
+HomeBank Archive, version 1.0.1
 
 hb-archive is a script to create a monthly archive of backup files created by
 HomeBank. I've used this script with HomeBank version 5.2.3 but it should work
@@ -80,17 +80,17 @@ title="HomeBank Archive 1.0.1 -- Copyright (c) 2019, Richard Romig (GPL v2.0)"
 curdir=$PWD
 
 # Set initial value of runflag to 1 (not okay to run archive)
-runflag=1
+runflag=0
 
 # Get the current month and day
 month=$(date +"%b")
 today=$(date +"%d")
 
 # Get previous month
-prevmonth=$(date --date="40 days ago" +"%B %Y")
+prevmonth=$(date --date="-1 month" +"%B %Y")
 
 # Create filename for previous month archive file
-hbarchive=$(date --date="40 days ago" +"%Y-%m")
+hbarchive=$(date --date="-1 month" +"%Y-%m")
 hbarchive+="-backup.zip"
 
 # Set reference date to 12:01 AM on 1st day of the current month
@@ -115,27 +115,27 @@ fi
 # Check to see if it's the last day of the month
 case $month in
   Feb)
-    [ "$today" -ge "28" ] && runflag=0 ;;
+    [ "$today" -ge "28" ] && runflag=1 ;;
   Apr|Jun|Sep|Nov)
-    [ "$today" -eq "30" ] && runflag=0 ;;
+    [ "$today" -eq "30" ] && runflag=1 ;;
   *)
-    [ "$today" -eq "31" ] && runflag=0 ;;
+    [ "$today" -eq "31" ] && runflag=1 ;;
 esac
 
 # If not the last day of the month, check if too early to archive
-if (( runflag == 1 )) && (( today < 21 )); then
+if (( runflag == 0 )) && (( today < 21 )); then
   echo "$title"
   echo "$month $today is too early in the month to archive last month's backup files."
   echo "Archive operation canceled."
   exit
-elif (( runflag == 1 )); then
+elif (( runflag == 0 )) && (( today >= 21 )); then
   echo "$title"
   echo "$month $today is not the end of the month."
   read -p "Do you still wish to archive backup files for $prevmonth? " yn
   case $yn in
     [Yy]*)
       sleep 5
-      runflag=0
+      runflag=1
       clear
       ;;
     *)

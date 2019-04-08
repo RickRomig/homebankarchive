@@ -1,6 +1,22 @@
 # Changelog
 ### 7 April 2019
 1. Fixed an error in the cleanup function which prevented the temporary reference file from being deleted. Changed `rm -f "ref_file"` to `'rm -f "$ref_file"`.
+2. Changed the method to fetch the previous month so it's not dependent upon a specific number of days in the past.
+```
+# Old code:
+prevmonth=$(date --date="40 days ago" +"%B %Y")
+# New code:
+prevmonth=$(date --date="-1 month" +"%B %Y")
+```
+3. Changed the method to fetch the previous month for the archive file name so it's not dependent upon a specific number of days in the past.
+```
+# Old code:
+hbarchive=$(date --date="40 days ago" +"%Y-%m")
+hbarchive+="-backup.zip"
+# Ndw code:
+hbarchive=$(date --date="-1 month" +"%Y-%m")
+hbarchive+="-backup.zip"
+```
 
 ### 3 April 2019
 1. Created new variables to contain the script's title and the reference file name, replacing all hard coded references to them.
