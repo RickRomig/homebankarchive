@@ -79,7 +79,7 @@ title="HomeBank Archive 1.0.1 -- Copyright (c) 2019, Richard Romig (GPL v2.0)"
 # Store the directory where script was launched
 curdir=$PWD
 
-# Set initial value of runflag to 1 (not okay to run archive)
+# Set initial value of runflag to 0 (not okay to run archive)
 runflag=0
 
 # Get the current month and day

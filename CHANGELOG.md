@@ -1,4 +1,7 @@
 # Changelog
+### 19 April 2018
+1. Corrected the comment for initializing the runflag variable to match the assigned value.
+
 ### 7 April 2019
 1. Fixed an error in the cleanup function which prevented the temporary reference file from being deleted. Changed `rm -f "ref_file"` to `'rm -f "$ref_file"`.
 2. Changed the method to fetch the previous month so it's not dependent upon a specific number of days in the past.
