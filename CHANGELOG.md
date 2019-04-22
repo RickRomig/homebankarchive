@@ -1,4 +1,20 @@
 # Changelog
+### 21 April 2019
+1. Removed `-n1` optinn from read command so there would be a newline between the responce and the next displayed line. The `-n1` accepts the first character received without waiting for a newline character.
+```
+# old code:
+read -n1 -p "Do you still wish to archive backup files for $prevmonth? [yN]" yn
+# new code:
+read -p "Do you still wish to archive backup files for $prevmonth? [yN]" yn
+```
+2. Added `$'\n'$` to the line to add a newline to the displayed text to separate it from the read prompt.
+```
+# old code:
+echo "Archive operation canceled."
+# new code:
+echo $'\n'$"Archive operation canceled."
+```
+
 ### 19 April 2018
 1. Corrected the comment for initializing the runflag variable to match the assigned value.
 

@@ -101,7 +101,7 @@ rd+="010001"
 ref_file="/tmp/homebank.tmp"
 touch -t $rd $ref_file
 if [ "$?" -ne "0" ]; then
-  echo "Error: Could not create $ref_file"
+  echo "Error: Could not create $ref_file">&2
   exit 1
 fi
 
@@ -131,7 +131,7 @@ if (( runflag == 0 )) && (( today < 21 )); then
 elif (( runflag == 0 )) && (( today >= 21 )); then
   echo "$title"
   echo "$month $today is not the end of the month."
-  read -p "Do you still wish to archive backup files for $prevmonth? " yn
+  read -p "Do you still wish to archive backup files for $prevmonth? [yN]" yn
   case $yn in
     [Yy]*)
       sleep 5
@@ -139,7 +139,7 @@ elif (( runflag == 0 )) && (( today >= 21 )); then
       clear
       ;;
     *)
-      echo "Archive operation canceled."
+      echo $'\n'$"Archive operation canceled."
       exit
       ;;
   esac
