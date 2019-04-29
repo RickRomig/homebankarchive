@@ -1,8 +1,8 @@
 #!/bin/bash
 #####################################################################
-# Script Name  : hb-archive
+# Script Name  : hb-archive (Version 1.0.2)
 # Description  : archive HomeBank 5.2.3 backup files from the previous month
-# Dependencies : case, cat, clear, date, find, mv, touch, zip
+# Dependencies : case, cat, clear, date, find, mktemp, mv, touch, zip
 # Arguments    : none
 # Author       : Richard Romig, 30 March 2019
 # Email        : rick.romig@gmail.com
@@ -30,7 +30,7 @@ hba-help () {
 
 cat << _EOF_
 
-HomeBank Archive, version 1.0.1
+HomeBank Archive, version 1.0.2
 
 hb-archive is a script to create a monthly archive of backup files created by
 HomeBank. I've used this script with HomeBank version 5.2.3 but it should work
@@ -74,7 +74,7 @@ trap cleanup EXIT
 
 # Variables
 
-title="HomeBank Archive 1.0.1 -- Copyright (c) 2019, Richard Romig (GPL v2.0)"
+title="HomeBank Archive 1.0.2 -- Copyright (c) 2019, Richard Romig (GPL v2.0)"
 
 # Store the directory where script was launched
 curdir=$PWD
@@ -97,11 +97,11 @@ hbarchive+="-backup.zip"
 rd=$(date +"%Y%m")
 rd+="010001"
 
-# Create the reference file and exit on error
-ref_file="/tmp/homebank.tmp"
+# Create the reference file. Exit on error
+ref_file=$(mktemp) || echo "Error: Reference file not created." >&2; exit 1
 touch -t $rd $ref_file
 if [ "$?" -ne "0" ]; then
-  echo "Error: Could not create $ref_file">&2
+  echo "Error: Could not create correct timestamp for reference file." >&2
   exit 1
 fi
 
@@ -112,14 +112,17 @@ if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
   exit
 fi
 
+# Check for invalid argument
+if [ -n "$1" ]; then
+  echo "Error: Invalid argument. Try 'hb-archive --help' for more info." >&2
+  exit 1
+fi
+
 # Check to see if it's the last day of the month
 case $month in
-  Feb)
-    [ "$today" -ge "28" ] && runflag=1 ;;
-  Apr|Jun|Sep|Nov)
-    [ "$today" -eq "30" ] && runflag=1 ;;
-  *)
-    [ "$today" -eq "31" ] && runflag=1 ;;
+  Feb)  [ "$today" -ge "28" ] && runflag=1 ;;
+  Apr|Jun|Sep|Nov)  [ "$today" -eq "30" ] && runflag=1 ;;
+  *)  [ "$today" -eq "31" ] && runflag=1 ;;
 esac
 
 # If not the last day of the month, check if too early to archive
@@ -169,7 +172,7 @@ else
   echo "No backup files for $prevmonth available to be archived."
 fi
 
-# Go back to wherever you started
+# Go back to where you started
 [ "$curdir" != "~/Documents/HomeBank" ] && popd > /dev/null
 
 exit 0

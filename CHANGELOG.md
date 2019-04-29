@@ -1,6 +1,34 @@
 # Changelog
+### 29 April 2019
+1. Re-coded the creation of the temporary reference file to use mktemp instead of usng a static file name. Also updated error messages for failure of file creation or changing the timestamp.
+```
+# Old code:
+ref_file="/tmp/homebank.tmp"
+touch -t $rd $ref_file
+if [ "$?" -ne "0" ]; then
+  echo "Error: Could not create $ref_file">&2
+  exit 1
+fi
+# New code:
+ref_file=$(mktemp) || echo "Error: Reference file not created." >&2; exit 1
+touch -t $rd $ref_file
+if [ "$?" -ne "0" ]; then
+  echo "Error: Could not create correct timestamp for reference file." >&2
+  exit 1
+fi
+```
+2. Added error message and exit for invalid arguments.
+```
+# New code:
+# Check for invalid argument
+if [ -n "$1" ]; then
+  echo "Error: Invalid argument. Try 'hb-archive --help' for more info." >&2
+  exit 1
+fi
+```
+
 ### 21 April 2019
-1. Removed `-n1` optinn from read command so there would be a newline between the responce and the next displayed line. The `-n1` accepts the first character received without waiting for a newline character.
+1. Removed `-n1` optinn from read command so there would be a newline between the response and the next displayed line. The `-n1` accepts the first character received without waiting for a newline character.
 ```
 # old code:
 read -n1 -p "Do you still wish to archive backup files for $prevmonth? [yN]" yn
