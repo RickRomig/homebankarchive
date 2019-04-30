@@ -44,7 +44,7 @@ find ./ -maxdepth 1 -type f -iname "*.bak" -not -newer $ref_file -exec mv '{}' b
 find ./ -maxdepth 1 -type f -iname "*.bak" -not -newer $ref_file -exec mv '{}' $backup_dir/ \;
 ```
 4. Removed the code that created the backup folder if it didn't exist.
-````
+```
 # Old code:
 [ -d ~/Documents/HomeBank/backup ] || mkdir -p ~/Documents/HomeBank/backup
 ```
