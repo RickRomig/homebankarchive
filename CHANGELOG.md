@@ -1,4 +1,29 @@
 # Changelog
+
+### 30 April 2019 Added
+1. Changed the code that creates the temporary file to display an error message if the file creation fails.
+```
+# Old code:
+ref_file=$(mktemp) || exit 1
+# New code:
+ref_file=$(mktemp)
+if "$?" -ne "0" ]; then
+  echo "Error: Failed to create reference file." >&2
+  exit 1
+fi
+```
+2. Changed the code that creates the temporary directory to display an error message if the directory creation fails.
+```
+# Old cde:
+backup_dir=$(mktemp -d) || exit 1
+# New code:
+backup_dir=$(mktemp -d)
+if [ "$?" -ne "0" ]; then
+  echo "Error: Failed to create temporary directory." >&2
+  exit 1
+fi
+```
+
 ### 30 April 2018
 1. Removed the echo command from the code that created the temporary file because it was causing the script to exit.
 ```
@@ -20,6 +45,7 @@ find ./ -maxdepth 1 -type f -iname "*.bak" -not -newer $ref_file -exec mv '{}' $
 ```
 4. Removed the code that created the backup folder if it didn't exist.
 ````
+# Old code:
 [ -d ~/Documents/HomeBank/backup ] || mkdir -p ~/Documents/HomeBank/backup
 ```
 5. Updated cleanup function to also remove the temporary directory upon exit.

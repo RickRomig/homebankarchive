@@ -30,32 +30,34 @@ hba-help () {
 
 cat << _EOF_
 
-HomeBank Archive, version 1.0.3
+HomeBank Archive, version 1.0.4
 
 hb-archive is a script to create a monthly archive of backup files created by
 HomeBank. I've used this script with HomeBank version 5.2.3 but it should work
-with any version that creates a daily backup with the .bak extension on
-Ubuntu-based Linux systems.
+with any version of HomeBank that creates a daily backup with the .bak extension
+on any Linux system based on Debian or Ubuntu.
 
 The script is intended to be run on the last day of the month to archive the
 previous month's backup files. For instance, running the script on March 31
 archives February's backup files. However, the script can be forced to run as
 early as the 21st of the month.
 
-Backup (*.bak) files in the the ~/Documents/HomeBank directory dated earlier than
-12:01 AM on the first day of the current calendar month are moved to the backup
-folder and a compressed archive file is created in the archive folder. Once the
-archive file is created, the .bak files in the backup folder are deleted. If
-there are no backup files in the backup folder, no archive file is created and
-the script exits.
+Backup (*.bak) files in the ~/Documents/HomeBank directory dated earlier than
+12:01 AM on the first day of the current calendar month are moved to a temporary
+directory and then they are moved into a compressed archive file for that month
+in an archive folder. If there are no backup files in the backup folder, no
+archive file is created and the script exits. Upon exiting the script for any
+reason, the reference file and the temporary directory are deleted.
 
-The archive folder is created if it doesn't already exist.
+The archive subdirectory is created under ~/Documents/HomeBank if it doesn't
+already exist.
 
-The only command line arguments allowed are --help or -h to display this help page.
-All other arguments will be reported as errors.
+The only command line arguments allowed are '--help' or '-h' to display this
+help page. Any other arguments are reported as errors.
 
-Please review the README.md, LICENSE, and WARRANTY in the downloaded ZIP archive for
-more information. They can also be reviewed at https://github.com/RickRomig/homebankarchive
+Please review the README.md, LICENSE, and WARRANTY in the downloaded ZIP archive
+for more information. They can also be reviewed in my repository at:
+https://github.com/RickRomig/homebankarchive
 
 By Richard Romig (GNU/General Public License version 2.0)
 
@@ -73,7 +75,7 @@ trap cleanup EXIT
 
 # Variables
 
-title="HomeBank Archive 1.0.3 -- Copyright (c) 2019, Richard Romig (GPL v2.0)"
+title="HomeBank Archive 1.0.4 -- Copyright (c) 2019, Richard Romig (GPL v2.0)"
 
 # Store the directory where script was launched
 curdir=$PWD
@@ -96,16 +98,26 @@ hbarchive+="-backup.zip"
 rd=$(date +"%Y%m")
 rd+="010001"
 
-# Create the reference file. Exit on error
-ref_file=$(mktemp) || exit 1
-touch -t $rd $ref_file
-if [ "$?" -ne "0" ]; then
-  echo "Error: Could not create correct timestamp for reference file." >&2
+# Create the reference file. Exit on error.
+ref_file=$(mktemp)
+if "$?" -ne "0" ]; then
+  echo "Error: Failed to create reference file." >&2
   exit 1
 fi
 
-# Create temporary backup directory
-backup_dir=$(mktemp -d) || exit 1
+# Change timestamp of reference file to 12:01 AM on 1st day of the month
+touch -t $rd $ref_file
+if [ "$?" -ne "0" ]; then
+  echo "Error: Could not change the timestamp of the reference file." >&2
+  exit 1
+fi
+
+# Create temporary backup directory. Exit on error.
+backup_dir=$(mktemp -d)
+if [ "$?" -ne "0" ]; then
+  echo "Error: Failed to create temporary directory." >&2
+  exit 1
+fi
 
 # Show help
 clear
