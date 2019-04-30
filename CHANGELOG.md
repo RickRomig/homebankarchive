@@ -1,4 +1,42 @@
 # Changelog
+### 30 April 2018
+1. Removed the echo command from the code that created the temporary file because it was causing the script to exit.
+```
+# Old code:
+ref_file=$(mktemp) || echo "Error: Reference file not created." >&2; exit 1
+New code:
+ref_file=$(mktemp) || exit 1
+```
+2. Added code to create a temporary directory to hold the backup files to be archived.
+```
+backup_dir=$(mktemp -d) || exit 1
+```
+3. Changed the find command that copies the backup files to be archived to the created temporary directory instead of the backup folder.
+```
+# Old code:
+find ./ -maxdepth 1 -type f -iname "*.bak" -not -newer $ref_file -exec mv '{}' backup/ \;
+# New code:
+find ./ -maxdepth 1 -type f -iname "*.bak" -not -newer $ref_file -exec mv '{}' $backup_dir/ \;
+```
+4. Removed the code that created the backup folder if it didn't exist.
+````
+[ -d ~/Documents/HomeBank/backup ] || mkdir -p ~/Documents/HomeBank/backup
+```
+5. Updated cleanup function to also remove the temporary directory upon exit.
+```
+# Old code:
+cleanup () {
+  if [ -f "$ref_file" ]; then
+    rm -f "$ref_file"
+  fi
+}
+# New code:
+cleanup () {
+  [ -f "$ref_file" ] && rm -f "$ref_file"
+  [ -d "$backup_dir" ] && rm -rf "$backup_dir"
+}
+```
+
 ### 29 April 2019
 1. Re-coded the creation of the temporary reference file to use mktemp instead of usng a static file name. Also updated error messages for failure of file creation or changing the timestamp.
 ```

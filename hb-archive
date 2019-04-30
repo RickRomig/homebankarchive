@@ -30,7 +30,7 @@ hba-help () {
 
 cat << _EOF_
 
-HomeBank Archive, version 1.0.2
+HomeBank Archive, version 1.0.3
 
 hb-archive is a script to create a monthly archive of backup files created by
 HomeBank. I've used this script with HomeBank version 5.2.3 but it should work
@@ -49,13 +49,13 @@ archive file is created, the .bak files in the backup folder are deleted. If
 there are no backup files in the backup folder, no archive file is created and
 the script exits.
 
-The archive and backup folders are created if they don't already exist.
+The archive folder is created if it doesn't already exist.
 
-The only command line arguments needed are --help or -h to display this help page.
-All other arguments are ignored.
+The only command line arguments allowed are --help or -h to display this help page.
+All other arguments will be reported as errors.
 
-Please review the README.md, LICENSE, and WARRANTY in the downloaded ZIP for
-information. They can also be reviewed at https://github.com/RickRomig/homebankarchive
+Please review the README.md, LICENSE, and WARRANTY in the downloaded ZIP archive for
+more information. They can also be reviewed at https://github.com/RickRomig/homebankarchive
 
 By Richard Romig (GNU/General Public License version 2.0)
 
@@ -63,18 +63,17 @@ _EOF_
 
 }
 
-# Cleanup tmp file after exit
+# Cleanup after exit
 cleanup () {
-  if [ -f "$ref_file" ]; then
-    rm -f "$ref_file"
-  fi
+  [ -f "$ref_file" ] && rm -f "$ref_file"
+  [ -d "$backup_dir" ] && rm -rf "$backup_dir"
 }
 
 trap cleanup EXIT
 
 # Variables
 
-title="HomeBank Archive 1.0.2 -- Copyright (c) 2019, Richard Romig (GPL v2.0)"
+title="HomeBank Archive 1.0.3 -- Copyright (c) 2019, Richard Romig (GPL v2.0)"
 
 # Store the directory where script was launched
 curdir=$PWD
@@ -98,12 +97,15 @@ rd=$(date +"%Y%m")
 rd+="010001"
 
 # Create the reference file. Exit on error
-ref_file=$(mktemp) || echo "Error: Reference file not created." >&2; exit 1
+ref_file=$(mktemp) || exit 1
 touch -t $rd $ref_file
 if [ "$?" -ne "0" ]; then
   echo "Error: Could not create correct timestamp for reference file." >&2
   exit 1
 fi
+
+# Create temporary backup directory
+backup_dir=$(mktemp -d) || exit 1
 
 # Show help
 clear
@@ -125,10 +127,10 @@ case $month in
   *)  [ "$today" -eq "31" ] && runflag=1 ;;
 esac
 
-# If not the last day of the month, check if too early to archive
+# If not the last day of the month, check if it's too early to archive
 if (( runflag == 0 )) && (( today < 21 )); then
   echo "$title"
-  echo "$month $today is too early in the month to archive last month's backup files."
+  echo "$month $today is too early in the month to archive $prevmonth backup files."
   echo "Archive operation canceled."
   exit
 elif (( runflag == 0 )) && (( today >= 21 )); then
@@ -153,20 +155,19 @@ fi
 # Go to the HomeBank directory from wherever you are if you're not already there
 [ "$curdir" != "~/Documents/HomeBank" ] && pushd ~/Documents/HomeBank/ > /dev/null
 
-# Create the backup and archive folders if they don't already exist
-[ -d ~/Documents/HomeBank/backup ] || mkdir -p ~/Documents/HomeBank/backup
+# Create the archive folder if it doesn't already exist
 [ -d ~/Documents/HomeBank/archive ] || mkdir -p ~/Documents/HomeBank/archive
 
 echo "$title"
 echo "Archiving HomeBank backup files from $prevmonth ..."
 
 # Move backup files from the previous month to the backup folder
-find ./ -maxdepth 1 -type f -iname "*.bak" -not -newer $ref_file -exec mv '{}' backup/ \;
+find ./ -maxdepth 1 -type f -iname "*.bak" -not -newer $ref_file -exec mv '{}' $backup_dir/ \;
 
 # Check for files in the backup directory
-if [ "$(ls -A backup)" ]; then
+if [ "$(ls -A $backup_dir)" ]; then
   echo "Creating $hbarchive ..."
-  zip -m archive/$hbarchive backup/*.bak
+  zip -m archive/$hbarchive $backup_dir/*.bak
   echo "HomeBank backup files for $prevmonth archived."
 else
   echo "No backup files for $prevmonth available to be archived."
