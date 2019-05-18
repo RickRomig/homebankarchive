@@ -1,5 +1,53 @@
 # Changelog
 
+### 17 May 2019
+1. Changed the temporary file creation and error checking to get the error status directly instead of indirectly.
+```
+# Old code:
+ref_file=$(mktemp)
+if "$?" -ne "0" ]; then
+  echo "Error: Failed to create reference file." >&2
+  exit 1
+fi
+# New code:
+if ! ref_file=$(mktemp)
+then
+  echo "Error: Failed to create reference file." >&2
+  exit 1
+fi
+```
+2. Changed error checking on for changing the timestamp for the temporary file.
+```
+# Old code:
+touch -t $rd $ref_file
+if [ "$?" -ne "0" ]; then
+  echo "Error: Could not change the timestamp of the reference file." >&2
+  exit 1
+fi
+# New code:
+if ! touch -t "$rd" "$ref_file"
+then
+  echo "Error: Could not change the timestamp of the reference file." >&2
+  exit 1
+fi
+```
+
+3. Changed the temporary directory creation and error checking to get the error status directly instead of indirectly.
+```
+# Old code:
+backup_dir=$(mktemp -d)
+if [ "$?" -ne "0" ]; then
+  echo "Error: Failed to create temporary directory." >&2
+  exit 1
+fi
+# New code:
+if ! backup_dir=$(mktemp -d)
+then
+  echo "Error: Failed to create temporary directory." >&2
+  exit 1
+fi
+```
+
 ### 30 April 2019 Added
 1. Changed the code that creates the temporary file to display an error message if the file creation fails.
 ```

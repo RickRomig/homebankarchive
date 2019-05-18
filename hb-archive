@@ -75,10 +75,14 @@ trap cleanup EXIT
 
 # Variables
 
+user=$USER
 title="HomeBank Archive 1.0.4 -- Copyright (c) 2019, Richard Romig (GPL v2.0)"
 
 # Store the directory where script was launched
 curdir=$PWD
+
+# Homebank Directory
+hbdir="/home/$user/Documents/Homebank"
 
 # Set initial value of runflag to 0 (not okay to run archive)
 runflag=0
@@ -99,22 +103,22 @@ rd=$(date +"%Y%m")
 rd+="010001"
 
 # Create the reference file. Exit on error.
-ref_file=$(mktemp)
-if "$?" -ne "0" ]; then
+if ! ref_file=$(mktemp)
+then
   echo "Error: Failed to create reference file." >&2
   exit 1
 fi
 
 # Change timestamp of reference file to 12:01 AM on 1st day of the month
-touch -t $rd $ref_file
-if [ "$?" -ne "0" ]; then
+if ! touch -t "$rd" "$ref_file"
+then
   echo "Error: Could not change the timestamp of the reference file." >&2
   exit 1
 fi
 
 # Create temporary backup directory. Exit on error.
-backup_dir=$(mktemp -d)
-if [ "$?" -ne "0" ]; then
+if ! backup_dir=$(mktemp -d)
+then
   echo "Error: Failed to create temporary directory." >&2
   exit 1
 fi
@@ -148,7 +152,7 @@ if (( runflag == 0 )) && (( today < 21 )); then
 elif (( runflag == 0 )) && (( today >= 21 )); then
   echo "$title"
   echo "$month $today is not the end of the month."
-  read -p "Do you still wish to archive backup files for $prevmonth? [yN]" yn
+  read -rp "Do you still wish to archive backup files for $prevmonth? [yN]" yn
   case $yn in
     [Yy]*)
       sleep 5
@@ -165,27 +169,28 @@ fi
 # Execution
 
 # Go to the HomeBank directory from wherever you are if you're not already there
-[ "$curdir" != "~/Documents/HomeBank" ] && pushd ~/Documents/HomeBank/ > /dev/null
+[ "$curdir" != "$hbdir" ] && pushd "$hbdir" > /dev/null
 
 # Create the archive folder if it doesn't already exist
-[ -d ~/Documents/HomeBank/archive ] || mkdir -p ~/Documents/HomeBank/archive
+[ -d "$hbdir/archive" ] || mkdir -p "$hbdir/archive"
 
 echo "$title"
 echo "Archiving HomeBank backup files from $prevmonth ..."
 
 # Move backup files from the previous month to the backup folder
-find ./ -maxdepth 1 -type f -iname "*.bak" -not -newer $ref_file -exec mv '{}' $backup_dir/ \;
+find ./ -maxdepth 1 -type f -iname "*.bak" -not -newer "$ref_file" -exec mv '{}' "$backup_dir"/ \;
 
 # Check for files in the backup directory
-if [ "$(ls -A $backup_dir)" ]; then
+if [ "$(ls -A "$backup_dir")" ]; then
   echo "Creating $hbarchive ..."
-  zip -m archive/$hbarchive $backup_dir/*.bak
+  zip -m "archive/$hbarchive" "$backup_dir/*.bak"
   echo "HomeBank backup files for $prevmonth archived."
 else
   echo "No backup files for $prevmonth available to be archived."
 fi
 
 # Go back to where you started
-[ "$curdir" != "~/Documents/HomeBank" ] && popd > /dev/null
+[ "$curdir" != "$hbdir" ] && popd > /dev/null
 
-exit 0
+exit
+
