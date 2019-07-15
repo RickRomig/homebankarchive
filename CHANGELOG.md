@@ -85,7 +85,7 @@ then
 fi
 ```
 
-### 30 April 2019 Added
+### 30 April 2019
 1. Changed the code that creates the temporary file to display an error message if the file creation fails.
 ```
 # Old code:
@@ -109,31 +109,30 @@ if [ "$?" -ne "0" ]; then
 fi
 ```
 
-### 30 April 2018
-1. Removed the echo command from the code that created the temporary file because it was causing the script to exit.
+3. Removed the echo command from the code that created the temporary file because it was causing the script to exit.
 ```
 # Old code:
 ref_file=$(mktemp) || echo "Error: Reference file not created." >&2; exit 1
 New code:
 ref_file=$(mktemp) || exit 1
 ```
-2. Added code to create a temporary directory to hold the backup files to be archived.
+4. Added code to create a temporary directory to hold the backup files to be archived.
 ```
 backup_dir=$(mktemp -d) || exit 1
 ```
-3. Changed the find command that copies the backup files to be archived to the created temporary directory instead of the backup folder.
+5. Changed the find command that copies the backup files to be archived to the created temporary directory instead of the backup folder.
 ```
 # Old code:
 find ./ -maxdepth 1 -type f -iname "*.bak" -not -newer $ref_file -exec mv '{}' backup/ \;
 # New code:
 find ./ -maxdepth 1 -type f -iname "*.bak" -not -newer $ref_file -exec mv '{}' $backup_dir/ \;
 ```
-4. Removed the code that created the backup folder if it didn't exist.
+6. Removed the code that created the backup folder if it didn't exist.
 ```
 # Old code:
 [ -d ~/Documents/HomeBank/backup ] || mkdir -p ~/Documents/HomeBank/backup
 ```
-5. Updated cleanup function to also remove the temporary directory upon exit.
+7. Updated cleanup function to also remove the temporary directory upon exit.
 ```
 # Old code:
 cleanup () {
