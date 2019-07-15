@@ -1,4 +1,41 @@
 # Changelog
+### 14 Jul 2019
+1. Eliminated the need for a temporary reference file and a temporary directory to hold files to be archived by changing the method used in executing the zip command. Now using the `-tt` option to move files created before the reference date. This change also elimiates the need for the trap commnad and the cleaup function.
+```
+# Old code:
+zip -m "archive/$hbarchive" "$backup_dir/*.bak"
+# New code:
+if zip -mtt "$refdate" "archive/$hbarchive" *.bak 2>/dev/null
+```
+2. Changed the method to set the reference date so it can by used by `zip -mtt`.
+```
+# Old code:
+# Set reference date to 12:01 AM on 1st day of the current month
+rd=$(date +"%Y%m")
+rd+="010001"
+# New code:
+# Set reference date to the first day of the current month
+refdate=$(date -d "$(date +%Y-%m-01)" +%m%d%Y)
+```
+3. Changed the method to determine previous month.
+```
+# Old code:
+prevmonth=$(date --date="-1 month" +"%B %Y")
+# New code:
+prevmonth=$(date -d "$(date +%Y-%m-01) - 1 day" +"%B %Y")
+```
+4. Changed method for naming previous month's archive file.
+```
+# Old code:
+hbarchive=$(date --date="-1 month" +"%Y-%m")
+hbarchive+="-backup.zip"
+# New code:
+hbarchive=$(date -d "$(date +%Y-%m-01) - 1 day" +%Y-%m)-backup.zip
+```
+5. Added a function to display version information and renamed the hba-help function to hba-info. Also changed the conditional statements that check arguments accordingly.
+6. Added a function to determine whether the current year is a leap year. The function returns 0 for a non-leap year and 1 for a leap year.
+7. Added a function that incorporates the routines to check the date and determine if the archive operation will execute. If the function returns 0, the archive is created. If it returns 1, the script has determined it is too early in the month, and if 2 is returned, the operation has been canceled by the user.
+8. Added a find command to determine if there are backup files that ready for archiving. If no files for the previous month are found, an message is display and the script exits.
 
 ### 17 May 2019
 1. Changed the temporary file creation and error checking to get the error status directly instead of indirectly.
