@@ -1,4 +1,13 @@
 # Changelog
+### 2 August 2019
+1. Corrected a typo in line 186. The string should have begun with a back slash rather than a forward slash.
+```
+# Old code:
+echo -e "/e[1;33mOnly '--info' and '--version' are acceptable arguments.\e[0m" >&2
+# New code:
+echo -e "\e[1;33mOnly '--info' and '--version' are acceptable arguments.\e[0m" >&2
+```
+
 ### 14 Jul 2019
 1. Eliminated the need for a temporary reference file and a temporary directory to hold files to be archived by changing the method used in executing the zip command. Now using the `-tt` option to move files created before the reference date. This change also elimiates the need for the trap commnad and the cleaup function.
 ```

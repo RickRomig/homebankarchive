@@ -183,7 +183,7 @@ elif [ "$1" == "--version" ]; then
   exit
 elif [ -n "$1" ]; then
   echo -e "\e[1;41mError: Invalid argument.\e[0m" >&2
-  echo -e "/e[1;33mOnly '--info' and '--version' are acceptable arguments.\e[0m" >&2
+  echo -e "\e[1;33mOnly '--info' and '--version' are acceptable arguments.\e[0m" >&2
   exit 1
 fi
 
