@@ -1,4 +1,15 @@
 # Changelog
+### 21 August
+1. Added `./` to line 229 to prevent file names beginning with dash from becoming options (not likely to happen but good coding practice)
+```
+# Old code:
+if zip -mtt "$refdate" "archive/$hbarchive" *.bak 2>/dev/null
+# New code:
+if zip -mtt "$refdate" "archive/$hbarchive" ./*.bak 2>/dev/null
+```
+2. Added copyright information to hba_version().
+3. Changed '--help' to '--info' in hba_info()
+
 ### 2 August 2019
 1. Corrected a typo in line 186. The string should have begun with a back slash rather than a forward slash.
 ```
