@@ -40,8 +40,8 @@ hba_info () {
 
 $scriptname, $version
 
-$progname is a script to create a monthly archive of backup files created by
-Maxime Doyen's HomeBank program. <http://homebank.free.fr>
+$progname is a script to create a monthly archive of backup files created
+by Maxime Doyen's HomeBank program. <http://homebank.free.fr>
 
 I've used this script with HomeBank version 5.2.3  and later but it should work
 with any version of HomeBank that creates a daily backup with the .bak extension
@@ -60,7 +60,7 @@ folder, no archive file is created and the script exits.
 The archive subdirectory is created under ~/Documents/HomeBank if it doesn't
 already exist.
 
-The only command line arguments allowed are '--help' to display this info page
+The only command line arguments allowed are '--info' to display this info page
 or --version to dipslay version information. Any other arguments are reported
 as errors.
 
@@ -79,8 +79,9 @@ hba_version () {
   clear
   cat << _EOF_
 $scriptname $version, dated $lastedited
-$progname is a script to create an end of the month archive of backup files
-created by Maxime Doyen's HomeBank program. <http://homebank.free.fr>"
+Copyright $copyright
+$progname is a script to create an end of the month archive of backup
+files created by Maxime Doyen's HomeBank program. <http://homebank.free.fr>"
 _EOF_
 }
 
@@ -149,8 +150,8 @@ checkdate () {
 user=$USER
 scriptname=$(basename "$0")
 progname="HomeBank Archive"
-version="v1.1.0"
-lastedited="2019-07-14"
+version="v1.1.1"
+lastedited="2019-08-21"
 copyright="(c) 2019, Richard Romig"
 
 # Store the directory where script was launched
@@ -226,7 +227,7 @@ fi
 
 echo $'\n'$"Archiving $prevmonth HomeBank backup files ..."
 
-if zip -mtt "$refdate" "archive/$hbarchive" *.bak 2>/dev/null
+if zip -mtt "$refdate" "archive/$hbarchive" ./*.bak 2>/dev/null
 then
   echo "HomeBank backup files for $prevmonth archived."
   echo "HomeBank Archives:"
