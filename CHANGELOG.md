@@ -1,5 +1,12 @@
 # Changelog
+### 27 August 2019
+**Version 1.1.3**
+1. Changed variable names to all capital letters.
+2. In the checkdate function, renamed MONTH variable to CURMONTH to better describe it.
+3. In the main execution block, added a new variable, CURDATE, to display the current date (day and full month) to display the current date.
+
 ### 21 August
+**Versin 1.1.1**
 1. Added `./` to line 229 to prevent file names beginning with dash from becoming options (not likely to happen but good coding practice)
 ```
 # Old code:
