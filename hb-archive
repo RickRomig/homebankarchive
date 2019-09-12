@@ -31,8 +31,41 @@
 # with this program. If not, see <https://www.gnu.org/licenses/>.
 ###############################################################################
 
+## Variables
+
+declare -r SCRIPTNAME=$(basename "$0")
+declare -r PROGNAME="HomeBank Archive"
+declare -r VERSION="v1.1.4"
+declare -r LASTEDITED="12 Sep 2019"
+declare -r COPYRIGHT="Copyright (C) 2019, Richard Romig"
+
+# Directories
+
+declare -r CURDIR=$PWD
+declare -r HOMEDIR=$HOME
+declare -r HBDIR="$HOMEDIR/Documents/HomeBank"
+
+# Set initial value of runflag to 1 (not okay to run archive)
+RUNFLAG=1
+
+# Current date
+CURDATE=$(date +"%d %B")
+
+# Previous month
+PREVMONTH=$(date -d "$(date +%Y-%m-01) - 1 day" +"%B %Y")
+
+# Set reference date to the first day of the current month
+REFDATE=$(date -d "$(date +%Y-%m-01)" +%m%d%Y)
+
+# Create filename for previous month archive file
+HBARCHIVE=$(date -d "$(date +%Y-%m-01) - 1 day" +%Y-%m)-backup.zip
+
+## Functions
+
 # Display info page
-hba_info () {
+
+hba_info()
+{
   clear
   cat << _EOF_
 
@@ -73,7 +106,8 @@ _EOF_
 
 # Show version information
 
-hba_version () {
+hba_version()
+{
   clear
   cat << _EOF_
 $SCRIPTNAME $VERSION, dated $LASTEDITED
@@ -85,45 +119,46 @@ _EOF_
 
 # Determine if the current year is a leap year
 
-leapyear () {
+leapyear()
+{
   YEAR=$(date +"%Y")
-  ISLEAP=0     # 0 = not a leap year, 1 = a leap year
+  ISLEAP=1     # 0 = is a leap year, 1 = is not a leap year
 
   if [ $(( YEAR % 4 )) -ne 0 ] ; then
       : #  not a leap year : means do nothing and use old value of isleap
    elif [ $(( YEAR % 400 )) -eq 0 ] ; then
       # yes, it's a leap year
-      ISLEAP=1
+      ISLEAP=0
    elif [ $(( YEAR % 100 )) -eq 0 ] ; then
       : # not a leap year do nothing and use old value of isleap
    else
       # it is a leap year
-      ISLEAP=1
+      ISLEAP=0
    fi
    return $ISLEAP
 }
 
 # Determine if it is an appropriate day of the month to run the script.
 
-checkdate () {
-
+checkdate()
+{
   # Flag to be returned to determine if the script will be run.
   # 0 = run script, 1 or 2 = don't run script
   FLAG=1
 
-  # Determine if current year is a leap year
+  # Determine if current year is a leap year (0 = leap year, 1 = not leap year)
   leapyear
-  LEAP=$?
+  LEAP="$?"
 
   CURMONTH=$(date +"%b")
   TODAY=$(date +"%d")
 
-  # Determin if it is the last day of the month
+  # Determine if it is the last day of the month
   case $CURMONTH in
     Feb)  if (( LEAP == 0 )); then
-            [ "$TODAY" -eq "28" ] && FLAG=0
-          else
             [ "$TODAY" -eq "29" ] && FLAG=0
+          else
+            [ "$TODAY" -eq "28" ] && FLAG=0
           fi
           ;;
     Apr|Jun|Sep|Nov)  [ "$TODAY" -eq "30" ] && FLAG=0 ;;
@@ -145,51 +180,23 @@ checkdate () {
   return "$FLAG"
 }
 
-## Variables
-
-MYUSER=$USER
-SCRIPTNAME=$(basename "$0")
-PROGNAME="HomeBank Archive"
-VERSION="v1.1.3"
-LASTEDITED="2019-08-26"
-COPYRIGHT="Copyright (C) 2019, Richard Romig"
-
-# Store the directory where script was launched
-CURDIR=$PWD
-
-# Homebank Directory Change after testing Change to HomeBank
-HBDIR="/home/$MYUSER/Documents/HomeBank"
-
-# Set initial value of runflag to 1 (not okay to run archive)
-RUNFLAG=1
-
-# Current date
-CURDATE=$(date +"%d %B")
-
-# Previous month
-PREVMONTH=$(date -d "$(date +%Y-%m-01) - 1 day" +"%B %Y")
-
-# Set reference date to the first day of the current month
-REFDATE=$(date -d "$(date +%Y-%m-01)" +%m%d%Y)
-
-# Create filename for previous month archive file
-HBARCHIVE=$(date -d "$(date +%Y-%m-01) - 1 day" +%Y-%m)-backup.zip
-
-# Execution
+## Execution
 
 # Check arguments
 
-if [ "$1" == "--info" ]; then
+if [ "$1" = "--info" ]; then
   hba_info
   exit
-elif [ "$1" == "--version" ]; then
+elif [ "$1" = "--version" ]; then
   hba_version
   exit
 elif [ -n "$1" ]; then
   echo -e "\e[1;41mError: Invalid argument.\e[0m" >&2
-  echo -e "\e[1;33mOnly '--info' and '--version' are acceptable arguments.\e[0m" >&2
+  echo -e "\e[1;33mOnly '--info' and '--version' are the only acceptable arguments.\e[0m" >&2
   exit 1
 fi
+
+# Introduction
 
 clear
 echo $'\n'$"*********************************************************"
@@ -201,17 +208,17 @@ echo "*********************************************************"
 # Check date to determine if it's okay to create the archive
 
 checkdate
-RUNFLAG=$?
+RUNFLAG="$?"
 
 if (( RUNFLAG == 1 )); then
-  echo "$CURDATE is too early in the month to archive last month's backup files."
+  echo $'\n'$"$CURDATE is too early in the month to archive last month's backup files."
   echo "The archive operation has been canceled by the script."
   exit
 elif (( RUNFLAG == 2 )); then
   echo $'\n'$"The archive operation has been canceled by the user on $CURDATE."
   exit
 else
-  echo "Archiving on $CURDATE."
+  :     # RUNFLAG = 0, continue with script
 fi
 
 # Go to the HomeBank directory from wherever you are if you're not already there
@@ -232,8 +239,9 @@ fi
 
 # Archive previous month's backup files
 
-echo $'\n'$"Archiving $PREVMONTH HomeBank backup files ..."
+echo $'\n'$"Archiving $PREVMONTH HomeBank backup files on $CURDATE..."
 
+# zip -mtt 08012019 archive/2018-07-backup.zip ./*.bak
 if zip -mtt "$REFDATE" "archive/$HBARCHIVE" ./*.bak 2>/dev/null
 then
   echo "HomeBank backup files for $PREVMONTH archived."
@@ -250,3 +258,4 @@ fi
 [ "$CURDIR" != "$HBDIR" ] && popd > /dev/null 2>&1
 
 exit
+

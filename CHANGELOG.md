@@ -1,4 +1,10 @@
 # Changelog
+### 12 September 2019
+**Version 1.1.4**
+1, Changed return values in the leapyear function so 0 (TRUE) is returned if the current year is a leap year and 1 (FALSE) if it is not.
+2. Adjusted the checkdate function to accommodate the changes in the leapyear function.
+3. Moved the main variable declarations to the top of the script before the function delcarations.
+
 ### 27 August 2019
 **Version 1.1.3**
 1. Changed variable names to all capital letters.
