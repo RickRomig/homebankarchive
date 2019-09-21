@@ -1,7 +1,12 @@
 # Changelog
+### 21 September 2010
+**hb-late v.0.0.4**
+* Added a simple script to be used to archive HomeBank backup files when `hb-archive` was not run by the end of the month. Creates an achive for two months prior.
+* This script does not include the `hb-archive` date checking routines.
+
 ### 12 September 2019
 **Version 1.1.4**
-1, Changed return values in the leapyear function so 0 (TRUE) is returned if the current year is a leap year and 1 (FALSE) if it is not.
+1. Changed return values in the leapyear function so 0 (TRUE) is returned if the current year is a leap year and 1 (FALSE) if it is not.
 2. Adjusted the checkdate function to accommodate the changes in the leapyear function.
 3. Moved the main variable declarations to the top of the script before the function delcarations.
 
@@ -12,7 +17,7 @@
 3. In the main execution block, added a new variable, CURDATE, to display the current date (day and full month) to display the current date.
 
 ### 21 August
-**Versin 1.1.1**
+**Version 1.1.1**
 1. Added `./` to line 229 to prevent file names beginning with dash from becoming options (not likely to happen but good coding practice)
 ```
 # Old code:
