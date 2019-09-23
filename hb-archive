@@ -35,8 +35,8 @@
 
 declare -r SCRIPTNAME=$(basename "$0")
 declare -r PROGNAME="HomeBank Archive"
-declare -r VERSION="v1.1.4"
-declare -r LASTEDITED="12 Sep 2019"
+declare -r VERSION="v1.1.5"
+declare -r LASTEDITED="22 Sep 2019"
 declare -r COPYRIGHT="Copyright (C) 2019, Richard Romig"
 
 # Directories
@@ -125,17 +125,17 @@ leapyear()
   ISLEAP=1     # 0 = is a leap year, 1 = is not a leap year
 
   if [ $(( YEAR % 4 )) -ne 0 ] ; then
-      : #  not a leap year : means do nothing and use old value of isleap
-   elif [ $(( YEAR % 400 )) -eq 0 ] ; then
-      # yes, it's a leap year
-      ISLEAP=0
-   elif [ $(( YEAR % 100 )) -eq 0 ] ; then
-      : # not a leap year do nothing and use old value of isleap
-   else
-      # it is a leap year
-      ISLEAP=0
+    : #  not a leap year : means do nothing and use old value of isleap
+  elif [ $(( YEAR % 400 )) -eq 0 ] ; then
+    # yes, it's a leap year
+    ISLEAP=0
+  elif [ $(( YEAR % 100 )) -eq 0 ] ; then
+    : # not a leap year do nothing and use old value of isleap
+  else
+    # it is a leap year
+    ISLEAP=0
    fi
-   return $ISLEAP
+   return "$ISLEAP"
 }
 
 # Determine if it is an appropriate day of the month to run the script.
@@ -242,8 +242,7 @@ fi
 echo $'\n'$"Archiving $PREVMONTH HomeBank backup files on $CURDATE..."
 
 # zip -mtt 08012019 archive/2018-07-backup.zip ./*.bak
-if zip -mtt "$REFDATE" "archive/$HBARCHIVE" ./*.bak 2>/dev/null
-then
+if zip -mtt "$REFDATE" "archive/$HBARCHIVE" ./*.bak 2>/dev/null; then
   echo "HomeBank backup files for $PREVMONTH archived."
   echo "HomeBank Archives:"
   ls -1 archive/
@@ -258,4 +257,3 @@ fi
 [ "$CURDIR" != "$HBDIR" ] && popd > /dev/null 2>&1
 
 exit
-
