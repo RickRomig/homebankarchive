@@ -1,4 +1,12 @@
 # Changelog
+### 20 October 2919
+**hb-archive v1.1.6**
+* Replaced `$HOMEDIR` variable with `$HOME`.
+* Assigned variables using command substituion before making them read-only.
+
+** hb-late v0.0.7**
+* Assigned variables using command substituion before making them read-only.
+
 ### 21 September 2010
 **hb-late v.0.0.4**
 * Added a simple script to be used to archive HomeBank backup files when `hb-archive` was not run by the end of the month. Creates an achive for two months prior.
