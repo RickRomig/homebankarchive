@@ -3,7 +3,7 @@
 # Script Name  : hb-late
 # Description  : Create HomeBank archive after the end of the month.
 # Dependencies : zip
-# Arguments    :
+# Arguments    : none
 # Author       : Richard B. Romig, 02 September 2019
 # Email        : rick.romig@gmail.com
 # Comments     :
@@ -24,34 +24,35 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with this program. If not, see <https://www.gnu.org/licenses/>.
-###############################################################################
 
 # Variables
 
-readonly SCRIPT=$(basename "$0"
-readonly VERSION="0.0.4"
-readonly UPDATED="13 September 2019"
+readonly SCRIPT=$(basename "$0")
+readonly VERSION="0.0.7"
+readonly UPDATED="18 Oct 2019"
 
 readonly CURDIR=$PWD
 readonly HBDIR=$HOME"/Documents/HomeBank"
 
 # Previous month (2 calendar months)
 PREVMONTH=$(date -d "$(date +%Y-%m-01) - 2 months" +"%B %Y")
+readonly PREVMONTH
 
 # Set reference date to the first day of the previous month
 REFDATE=$(date -d "$(date +%Y-%m-01) - 1 month" +%m%d%Y)
+readonly REFDATE
 
 # Create filename for the archive file
 HBARCHIVE=$(date -d "$(date +%Y-%m-01) - 2 months" +%Y-%m)-backup.zip
+readonly HBARCHIVE
 
 [ "$CURDIR" != "$HBDIR" ] && pushd "$HBDIR" > /dev/null 2>&1
 
 echo "$SCRIPT v$VERSION (Updated: $UPDATED)"
 echo "Archive HomeBank backup files when I forget at the end of the month."
 
-if zip -mtt "$REFDATE" "archive/$HBARCHIVE" ./*.bak 2>/dev/null
-then
-  echo "HomeBank backup files for $PREVMONTH archived."
+if zip -mtt "$REFDATE" "archive/$HBARCHIVE" ./*.bak 2>/dev/null; then
+  echo -e "\e[1;33mHomeBank backup files for $PREVMONTH archived.\e[0m]"
   echo "HomeBank Archives:"
   ls -1 archive/
 else
