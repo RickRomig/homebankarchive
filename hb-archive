@@ -33,32 +33,35 @@
 
 ## Variables
 
-declare -r SCRIPTNAME=$(basename "$0")
-declare -r PROGNAME="HomeBank Archive"
-declare -r VERSION="v1.1.5"
-declare -r LASTEDITED="22 Sep 2019"
-declare -r COPYRIGHT="Copyright (C) 2019, Richard Romig"
+readonly SCRIPTNAME=$(basename "$0")
+readonly PROGNAME="HomeBank Archive"
+readonly VERSION="v1.1.6"
+readonly LASTEDITED="18 Oct 2019"
+readonly COPYRIGHT="Copyright (C) 2019, Richard Romig"
 
 # Directories
 
-declare -r CURDIR=$PWD
-declare -r HOMEDIR=$HOME
-declare -r HBDIR="$HOMEDIR/Documents/HomeBank"
+readonly CURDIR=$PWD
+readonly HBDIR=$HOME"/Documents/HomeBank"
 
 # Set initial value of runflag to 1 (not okay to run archive)
 RUNFLAG=1
 
 # Current date
 CURDATE=$(date +"%d %B")
+readonly CURDATE
 
 # Previous month
 PREVMONTH=$(date -d "$(date +%Y-%m-01) - 1 day" +"%B %Y")
+readonly PREVMONTH
 
 # Set reference date to the first day of the current month
 REFDATE=$(date -d "$(date +%Y-%m-01)" +%m%d%Y)
+readonly REFDATE
 
 # Create filename for previous month archive file
 HBARCHIVE=$(date -d "$(date +%Y-%m-01) - 1 day" +%Y-%m)-backup.zip
+readonly HBARCHIVE
 
 ## Functions
 
