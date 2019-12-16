@@ -35,8 +35,8 @@
 
 readonly SCRIPTNAME=$(basename "$0")
 readonly PROGNAME="HomeBank Archive"
-readonly VERSION="v1.1.6"
-readonly LASTEDITED="18 Oct 2019"
+readonly VERSION="v1.1.8"
+readonly LASTEDITED="11 Dec 2019"
 readonly COPYRIGHT="Copyright (C) 2019, Richard Romig"
 
 # Directories
@@ -65,80 +65,21 @@ readonly HBARCHIVE
 
 ## Functions
 
-# Display info page
-
-hba_info()
-{
-  clear
-  cat << _EOF_
-
-$SCRIPTNAME, $VERSION
-
-$PROGNAME is a script to create a monthly archive of backup files created
-by Maxime Doyen's HomeBank program. <http://homebank.free.fr>
-
-I've used this script with HomeBank version 5.2.3  and later but it should work
-with any version of HomeBank that creates a daily backup with the .bak extension
-on any Linux system based on Debian or Ubuntu.
-
-The script is intended to be run on the last day of the month to archive the
-previous month's backup files. For instance, running the script on March 31
-archives February's backup files. However, the script can be forced to run as
-early as the 21st of the month.
-
-Backup (*.bak) files in the ~/Documents/HomeBank directory dated prior the first
-day of the current calendar month are moved into a compressed archive file for
-the prior month in an archive folder. If there are no backup files in the backup
-folder, no archive file is created and the script exits.
-
-The archive subdirectory is created under ~/Documents/HomeBank if it doesn't
-already exist.
-
-The only command line arguments allowed are '--info' to display this info page
-or --version to dipslay version information. Any other arguments are reported
-as errors.
-
-Please review the README.md, LICENSE, and WARRANTY in the downloaded ZIP archive
-for more information. They can also be reviewed in my repository at:
-https://github.com/RickRomig/homebankarchive
-
-By Richard Romig (GNU/General Public License version 2.0)
-
-_EOF_
-}
-
-# Show version information
-
-hba_version()
-{
-  clear
-  cat << _EOF_
-$SCRIPTNAME $VERSION, dated $LASTEDITED
-$COPYRIGHT
-$PROGNAME is a script to create an end of the month archive of backup
-files created by Maxime Doyen's HomeBank program. <http://homebank.free.fr>"
-_EOF_
-}
-
 # Determine if the current year is a leap year
 
 leapyear()
 {
   YEAR=$(date +"%Y")
-  ISLEAP=1     # 0 = is a leap year, 1 = is not a leap year
 
   if [ $(( YEAR % 4 )) -ne 0 ] ; then
-    : #  not a leap year : means do nothing and use old value of isleap
+    return 1
   elif [ $(( YEAR % 400 )) -eq 0 ] ; then
-    # yes, it's a leap year
-    ISLEAP=0
+    return 0
   elif [ $(( YEAR % 100 )) -eq 0 ] ; then
-    : # not a leap year do nothing and use old value of isleap
+    return 1
   else
-    # it is a leap year
-    ISLEAP=0
-   fi
-   return "$ISLEAP"
+    return 0
+  fi
 }
 
 # Determine if it is an appropriate day of the month to run the script.
@@ -158,14 +99,17 @@ checkdate()
 
   # Determine if it is the last day of the month
   case $CURMONTH in
-    Feb)  if (( LEAP == 0 )); then
-            [ "$TODAY" -eq "29" ] && FLAG=0
-          else
-            [ "$TODAY" -eq "28" ] && FLAG=0
-          fi
-          ;;
-    Apr|Jun|Sep|Nov)  [ "$TODAY" -eq "30" ] && FLAG=0 ;;
-    *)  [ "$TODAY" -eq "31" ] && FLAG=0 ;;
+    Feb)
+      if (( LEAP == 0 )); then
+        [ "$TODAY" -eq "29" ] && FLAG=0
+      else
+        [ "$TODAY" -eq "28" ] && FLAG=0
+      fi
+      ;;
+    Apr|Jun|Sep|Nov)
+      [ "$TODAY" -eq "30" ] && FLAG=0 ;;
+    *)
+      [ "$TODAY" -eq "31" ] && FLAG=0 ;;
   esac
 
   # If not the last day of the month, check if it's too early to archive
@@ -183,6 +127,61 @@ checkdate()
   return "$FLAG"
 }
 
+# Display info page
+
+hba_info()
+{
+  clear
+  cat << _EOF_
+
+$SCRIPTNAME, $VERSION
+
+$PROGNAME is a script to create a monthly archive of backup files created
+by HomeBank written by Maxime Doyen. <http://homebank.free.fr>
+
+I have used this script with HomeBank version 5.2.3  and later but it should work
+with any version of HomeBank that creates a daily backup with the .bak extension
+on any Linux system based on Debian or Ubuntu.
+
+The script is intended to be run on the last day of the month to archive the
+ backup files from the previous month. For instance, running the script on March
+ 31 archives February backup files. However, the script can be forced to run as
+early as the 21st of the month.
+
+Backup (*.bak) files in the ~/Documents/HomeBank directory dated prior the first
+day of the current calendar month are moved into a compressed archive file for
+the prior month in an archive folder. If there are no backup files in the backup
+folder, no archive file is created and the script exits.
+
+The archive subdirectory is created under ~/Documents/HomeBank if it does not
+already exist.
+
+The only command line options allowed are --info to display this info page or
+--version to dipslay version information. Any other option will be reported as
+ an error followed by usage instructions.
+
+Please review the README.md, LICENSE, and WARRANTY in the downloaded ZIP archive
+for more information. They can also be reviewed in my repository at:
+https://github.com/RickRomig/homebankarchive
+
+By Richard Romig (GNU/General Public License version 2.0)
+
+_EOF_
+}
+
+# Show version information
+
+hba_version()
+{
+  clear
+  cat << _EOF_
+$SCRIPTNAME $VERSION, dated $LASTEDITED
+$COPYRIGHT
+$PROGNAME is a script to create an end of the month archive of backup
+files created by the Maxime Doyen HomeBank program. <http://homebank.free.fr>
+_EOF_
+}
+
 ## Execution
 
 # Check arguments
@@ -194,8 +193,12 @@ elif [ "$1" = "--version" ]; then
   hba_version
   exit
 elif [ -n "$1" ]; then
-  echo -e "\e[1;41mError: Invalid argument.\e[0m" >&2
-  echo -e "\e[1;33mOnly '--info' and '--version' are the only acceptable arguments.\e[0m" >&2
+  echo -e "\e[0;31mERROR: Invalid option.\e[0m" >&2
+  echo "Usage: $SCRIPTNAME [option]" >&2
+  echo "Examples:" >&2
+  echo "$SCRIPTNAME" >&2
+  echo "$SCRIPTNAME --info" >&2
+  echo "$SCRIPTNAME --version" >&2
   exit 1
 fi
 
@@ -208,7 +211,7 @@ echo "$COPYRIGHT"
 echo "Licensed under the GNU/General Public License version 2.0"
 echo "*********************************************************"
 
-# Check date to determine if it's okay to create the archive
+# Check date to determine if it is okay to create the archive
 
 checkdate
 RUNFLAG="$?"
@@ -224,11 +227,11 @@ else
   :     # RUNFLAG = 0, continue with script
 fi
 
-# Go to the HomeBank directory from wherever you are if you're not already there
+# Go to the HomeBank directory from wherever you are if not already there
 
 [ "$CURDIR" != "$HBDIR" ] && pushd "$HBDIR" > /dev/null 2>&1
 
-# Create the archive folder if it doesn't already exist
+# Create the archive folder if it does not already exist
 
 [ -d "$HBDIR/archive" ] || mkdir -p "$HBDIR/archive"
 
@@ -240,7 +243,7 @@ if (( NBU <= 0 )); then
   exit
 fi
 
-# Archive previous month's backup files
+# Archive backup files from the previous month
 
 echo $'\n'$"Archiving $PREVMONTH HomeBank backup files on $CURDATE..."
 

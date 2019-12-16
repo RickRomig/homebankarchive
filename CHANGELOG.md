@@ -1,16 +1,56 @@
 # Changelog
-### 20 October 2919
+### 11 December 2019
+**hb-archive v1.1.8**
+1. Modified the leapyear function return the result of the first conditinoal test that succeeds thus eliminating the ISLEAP variable.
+```
+# Old code:
+leapyear()
+{
+    YEAR=$(date +"%Y")
+    ISLEAP=1
+
+    if [ $(( YEAR % 4 )) -ne 0 ] ; then
+      :
+    elif [ $(( YEAR % 400 )) -eq 0 ] ; then
+      ISLEAP=0
+    elif [ $(( YEAR % 100 )) -eq 0 ] ; then
+      :
+    else
+      ISLEAP=0
+    fi
+    return "ISLEAP"
+}
+# New code:
+leapyear()
+{
+    YEAR=$(date +"%Y")
+
+    if [ $(( YEAR % 4 )) -ne 0 ] ; then
+      return 1
+    elif [ $(( YEAR % 400 )) -eq 0 ] ; then
+      return 0
+    elif [ $(( YEAR % 100 )) -eq 0 ] ; then
+      return 1
+    else
+      return 0
+    fi
+}
+```
+2. Added usage instructions to be displayed if an option other than --info or --version is entered.
+3. Edited hba_info and hba_version HereDoc functions so as not to alter syntax highlightng in the rest of the script.
+
+### 20 October 2019
 **hb-archive v1.1.6**
-* Replaced `$HOMEDIR` variable with `$HOME`.
-* Assigned variables using command substituion before making them read-only.
+1. Replaced `$HOMEDIR` variable with `$HOME`.
+2. Assigned variables using command substituion before making them read-only.
 
-** hb-late v0.0.7**
-* Assigned variables using command substituion before making them read-only.
+**hb-late v0.0.7**
+1. Assigned variables using command substituion before making them read-only.
 
-### 21 September 2010
+### 21 September 2019
 **hb-late v.0.0.4**
-* Added a simple script to be used to archive HomeBank backup files when `hb-archive` was not run by the end of the month. Creates an achive for two months prior.
-* This script does not include the `hb-archive` date checking routines.
+1. Added a simple script to be used to archive HomeBank backup files when `hb-archive` was not run by the end of the month. Creates an achive for two months prior.
+2. This script does not include the `hb-archive` date checking routines.
 
 ### 12 September 2019
 **Version 1.1.4**
@@ -24,7 +64,7 @@
 2. In the checkdate function, renamed MONTH variable to CURMONTH to better describe it.
 3. In the main execution block, added a new variable, CURDATE, to display the current date (day and full month) to display the current date.
 
-### 21 August
+### 21 August 2019
 **Version 1.1.1**
 1. Added `./` to line 229 to prevent file names beginning with dash from becoming options (not likely to happen but good coding practice)
 ```
