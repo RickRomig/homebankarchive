@@ -1,4 +1,10 @@
 # Changelog
+### 21 January 2020
+**hb-cron.sh v1.0.0**
+1. Added script to run as a cron job from crontab to create a zipped archive of the backup files from two months prior. In my case I used crontab to schedule it to run on the first of every month.
+2. The script is based on the hb-late script. Extraneous comments, variables, and echo statement were removed.
+3. The script was also changed to run as a POSIX script, instead of BASH to run as a cron job.
+
 ### 11 December 2019
 **hb-archive v1.1.8**
 1. Modified the leapyear function return the result of the first conditinoal test that succeeds thus eliminating the ISLEAP variable.
