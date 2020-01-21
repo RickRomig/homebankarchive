@@ -1,13 +1,14 @@
 #!/bin/sh
 ###############################################################################
 # Script Name  : hb-cron.sh
-# Description  : Create HomeBank archive on the first of the month.
+# Description  : Create HomeBank archive as a cron job.
 # Dependencies : date, zip
 # Arguments    : none
 # Author       : Richard B. Romig, 21 January 2020
 # Email        : rick.romig@gmail.com
 # Comments     : Run from crontab
-#              : Version 1.0.0, Updated 21 Jan 2020
+#              : Version 1.0.1, Updated 21 Jan 2020
+#              : GNU/General Public License, version 2.0
 # TODO (rick)  :
 ###############################################################################
 
